@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>FB SHARE</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<style>
+body{font-family:Arial;background:#e8f4ff;margin:0}
+.card{max-width:420px;margin:60px auto;background:#fff;border-radius:12px;padding:20px;box-shadow:0 6px 18px rgba(0,0,0,.1)}
+h1{text-align:center;color:#3498db}
+input,textarea,button{width:100%;padding:10px;margin:6px 0;border-radius:8px;border:1px solid #ccc}
+button{background:#3498db;color:#fff;border:none;font-weight:bold}
+.nav{display:flex;gap:10px;justify-content:center;margin-bottom:10px}
+.count{font-size:12px;color:#666;text-align:right}
+.hidden{display:none}
+small{color:#777}
+</style>
+</head>
+<body>
+
+<div class="card" id="auth">
+  <h1>FB SHARE</h1>
+  <div class="nav">
+    <button onclick="show('login')">Login</button>
+    <button onclick="show('register')">Create</button>
+  </div>
+
+  <!-- LOGIN -->
+  <div id="login">
+    <input id="l_user" placeholder="username or email">
+    <input id="l_pass" type="password" placeholder="password">
+    <button onclick="login()">Login</button>
+    <small id="l_msg"></small>
+  </div>
+
+  <!-- REGISTER -->
+  <div id="register" class="hidden">
+    <input id="r_user" placeholder="username">
+    <input id="r_disp" placeholder="display name">
+    <input id="r_mail" placeholder="gmail">
+    <input id="r_age" type="number" placeholder="age">
+    <input id="r_pass" type="password" placeholder="password">
+    <input id="r_pass2" type="password" placeholder="confirm password">
+    <button onclick="register()">Create Account</button>
+    <small id="r_msg"></small>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div class="card hidden" id="dash">
+  <h1>FB SHARE</h1>
+  <label>Cookie</label>
+  <textarea id="cookie" oninput="countLines('cookie','cc')"></textarea>
+  <div class="count">Count: <span id="cc">0</span></div>
+
+  <label>Link</label>
+  <input id="link" oninput="countComma('link','lc')">
+  <div class="count">Count: <span id="lc">0</span></div>
+
+  <label>Limit</label>
+  <input id="limit" type="number" value="10" oninput="document.getElementById('limc').innerText=this.value">
+  <div class="count">Remaining: <span id="limc">10</span></div>
+
+  <button onclick="submitAction()">SUBMIT (demo)</button>
+  <small id="d_msg"></small>
+</div>
+
+<script>
+function show(id){loginDiv.classList.add('hidden');registerDiv.classList.add('hidden');document.getElementById(id).classList.remove('hidden')}
+const loginDiv=document.getElementById('login'),registerDiv=document.getElementById('register');
+
+function countLines(id,out){const v=document.getElementById(id).value;document.getElementById(out).innerText=v? v.split('\n').length:0}
+function countComma(id,out){const v=document.getElementById(id).value;document.getElementById(out).innerText=v? v.split(',').length:0}
+
+async function register(){
+  const u=r_user.value,d=r_disp.value,e=r_mail.value,a=r_age.value,p=r_pass.value,p2=r_pass2.value;
+  const res=await fetch('/api/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({u,d,e,a,p,p2})});
+  const j=await res.json(); r_msg.textContent=j.msg+(j.key?(" | KEY: "+j.key):"");
+}
+
+async function login(){
+  const res=await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({u:l_user.value,p:l_pass.value})});
+  const j=await res.json(); l_msg.textContent=j.msg;
+  if(j.ok){ auth.classList.add('hidden'); dash.classList.remove('hidden'); }
+}
+
+function submitAction(){
+  const l=limit; if(l.value<=0){d_msg.textContent="Limit reached";return;}
+  l.value--; limc.innerText=l.value; d_msg.textContent="Action logged (demo only)";
+}
+</script>
+</body>
+</html>
